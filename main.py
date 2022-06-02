@@ -1,6 +1,7 @@
-from random import random
-import time
+from random import random,randint
 import math
+import time
+
 
 def dynamic(w, v, cap, n):
     K = [[0 for i in range(cap + 1)] for j in range(n + 1)]
@@ -56,6 +57,16 @@ def knapsackBf(b, n, t):
             chosen = lchosen
             bn = binary
     return fmax, size, chosen, bn
+
+
+def knapSack(W, wt, val, n):
+    if n == 0 or W == 0 :
+        return 0
+    if wt[n - 1] > W:
+        return knapSack(W, wt, val, n-1)
+    else:
+        return max(val[n-1] + knapSack(W-wt[n-1], wt, val, n-1),
+            knapSack(W, wt, val, n-1))
 
 
 while True:
@@ -185,71 +196,86 @@ while True:
             print("Przedmiot", t1_file[x-1][0] + 1, "waga:", t1_file[x-1][1], "wartość:", t1_file[x-1][2])
 
         print("\n")
-    n=[10,50,100,200,500,1000,2000,3000,5000,7000]
+    # n = [500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000] # ilość elementów
+    # n = [8, 12, 16, 20, 24, 28, 32, 36, 40, 44]
+    # n = [26,22,18]
+    cap = [1500, 3000, 4500, 6000, 7500, 9000, 10500, 12000, 13500, 15000]
     if ans == '3':
-        for i in n:
-            cap = 1000 #losowa? pojemność plecaka
-            #n - liczba elementów
+        for i in cap:
+            print(f"Wartość: {i}", end= " ")
+            n = 500  # zmieniać jak będzie trzeba to się zmieni na stałą liczbę elementów ?!?
             tab_AD = []
             avg_AD = 0
             tab_AZ = []
             avg_AZ = 0
             tab_AB = []
             avg_AB = 0
+            print(f"etap",end=" ")
             for j in range(1,11):
+                print(j, end=" ")
                 p = []
                 t = []
-                t1 = [] #ogólnie generator liczb
-                #t.append([i, q[0], q[1], q[1] / q[0]])
-                #t1.append([i, q[0], q[1]])
-                #...
+                t1val = [] # ogólnie generator liczb
+                t1wt = []
+                for x in range(n):  # zmianan i na n
+                    r = randint(1, 150)  # rozmiar przedmiotu
+                    wartosc = randint(1, 250)  # wartość przedmiotu
+                    p.append([r, wartosc])
+                    t.append([x, r, wartosc, wartosc / r])  # index | rozmiar | wartość |     wartość/rozmiar
+                    t1val.append(wartosc)  # index | rozmiar | wartość
+                    t1wt.append(r)
+
                 w = []
                 v = []
-                for i in range(n[0]):
-                    w.append(p[i][0])
-                    v.append(p[i][1])
+                for j in range(n):
+                    w.append(p[j][0])
+                    v.append(p[j][1])
 
                 time_AD = time.time()
-                K = dynamic(w, v, cap, n)
+                K = dynamic(w, v, i, n)
                 end_AD = time.time() - time_AD
                 tab_AD.append(end_AD)
                 avg_AD += end_AD
 
                 time_AZ = time.time()
-                elm, elementy, rozmiar, wartosc = kanpsackAZ(t, cap, n)
+                elm, elementy, rozmiar, wartosc = kanpsackAZ(t, i, n)
                 end_AZ = time.time() - time_AZ
                 tab_AZ.append(end_AZ)
                 avg_AZ += end_AZ
 
-                time_AB = time.time()
-                fmax, size, elements, bn = knapsackBf(n[1], n[0], t1)
-                end_AB = time.time() - time_AB
-                tab_AB.append(end_AB)
-                avg_AB += end_AB
+                # time_AB = time.time()
+                # # fmax, size, elements, bn = knapsackBf(cap, i, t1)
+                # knapSack(i,t1wt, t1val, n) # pojemność | waga | wartosc | ilosc przedmiotów
+                # end_AB = time.time() - time_AB
+                # tab_AB.append(end_AB)
+                # avg_AB += end_AB
+
+            # Odchylenie
             avg_AD = avg_AD/10
             avg_AZ = avg_AZ/10
-            avg_AB = avg_AB/10
+            # avg_AB = avg_AB/10
             os_AD = 0
             os_AZ = 0
-            os_AB = 0
-            for i in range(10):
-                os_AD += (tab_AD[i]-avg_AD)*(tab_AD[i]-avg_AD)
-                os_AZ += (tab_AZ[i] - avg_AZ) * (tab_AZ[i] - avg_AZ)
-                os_AB += (tab_AB[i] - avg_AB) * (tab_AB[i] - avg_AB)
+            # os_AB = 0
+            for k in range(10):
+                os_AD += (tab_AD[k]-avg_AD)*(tab_AD[k]-avg_AD)
+                os_AZ += (tab_AZ[k] - avg_AZ) * (tab_AZ[k] - avg_AZ)
+                # os_AB += (tab_AB[k] - avg_AB) * (tab_AB[k] - avg_AB)
             os_AD = math.sqrt(os_AD/10)
             os_AZ = math.sqrt(os_AZ/10)
-            os_AB = math.sqrt(os_AB/10)
+            # os_AB = math.sqrt(os_AB/10)
+
             with open('AD.txt', 'a') as f:
-                form = "{}\t{}\t{}\n".format(v, avg_AD, os_AD)
+                form = "{}\t{}\t{}\n".format(i, avg_AD, os_AD)
                 f.write(form)
-            print("\n")
-            with open('AD.txt', 'a') as f:
-                form = "{}\t{}\t{}\n".format(v, avg_AZ, os_AZ)
+
+            with open('AZ.txt', 'a') as f:
+                form = "{}\t{}\t{}\n".format(i, avg_AZ, os_AZ)
                 f.write(form)
-            print("\n")
-            with open('AD.txt', 'a') as f:
-                form = "{}\t{}\t{}\n".format(v, avg_AB, os_AB)
-                f.write(form)
+
+            # with open('AB.txt', 'a') as f:
+            #     form = "{}\t{}\t{}\n".format(i, avg_AB, os_AB)
+            #     f.write(form)
             print("\n")
     if ans == '4':
         break
